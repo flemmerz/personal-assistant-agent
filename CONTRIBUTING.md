@@ -14,7 +14,7 @@ Thank you for your interest in contributing to the Personal Assistant Agent! Thi
 - Clear description of the issue
 - Steps to reproduce the behavior
 - Expected vs. actual behavior
-- Environment details (OS, Python version, etc.)
+- Environment details (OS, Python version, shell type)
 - Relevant logs or error messages
 
 ### Suggesting Features
@@ -34,20 +34,20 @@ Thank you for your interest in contributing to the Personal Assistant Agent! Thi
 #### Development Setup
 
 1. **Fork the repository**
-   ```bash
+   ```zsh
    git clone https://github.com/your-username/personal-assistant-agent.git
    cd personal-assistant-agent
    ```
 
 2. **Set up development environment**
-   ```bash
+   ```zsh
    python setup.py
    python setup.py --database
    python test_setup.py
    ```
 
 3. **Create a feature branch**
-   ```bash
+   ```zsh
    git checkout -b feature/your-feature-name
    ```
 
@@ -121,7 +121,7 @@ async def test_action_item_extraction():
 ```
 
 **Running Tests:**
-```bash
+```zsh
 # Run setup verification
 python test_setup.py
 
@@ -130,6 +130,12 @@ python -m pytest tests/
 
 # Run specific test
 python -m pytest tests/test_processors.py::test_action_item_extraction
+
+# Run with verbose output
+python -m pytest -v
+
+# Run with coverage
+python -m pytest --cov=main
 ```
 
 #### Documentation
@@ -170,10 +176,17 @@ class TaskProcessor:
 #### Pull Request Process
 
 1. **Before submitting:**
-   - Ensure all tests pass: `python test_setup.py`
-   - Run code formatting: `black .` and `isort .`
-   - Update documentation if needed
-   - Add tests for new functionality
+   ```zsh
+   # Ensure all tests pass
+   python test_setup.py
+   
+   # Run code formatting
+   black .
+   isort .
+   
+   # Check for issues
+   flake8 .
+   ```
 
 2. **Pull Request Description:**
    ```markdown
@@ -348,10 +361,13 @@ class MockAIClient:
 ### For Contributors
 
 **Before Requesting Review:**
-- [ ] All tests pass locally
-- [ ] Code follows project style guidelines
-- [ ] Documentation is updated
-- [ ] Commit messages are clear and descriptive
+```zsh
+# Checklist commands
+python test_setup.py          # All tests pass
+black . && isort .            # Code formatting
+flake8 .                      # Linting
+git diff --name-only          # Review changed files
+```
 
 ## 🚀 Release Process
 
@@ -362,11 +378,15 @@ We follow [Semantic Versioning](https://semver.org/):
 - **PATCH**: Bug fixes (backward compatible)
 
 ### Release Checklist
-1. Update version numbers
-2. Update CHANGELOG.md
-3. Create release notes
-4. Tag the release
-5. Deploy to production
+```zsh
+# Update version and create release
+git tag v1.0.0
+git push origin v1.0.0
+
+# Build and test
+docker build -t personal-assistant-agent:v1.0.0 .
+python test_setup.py
+```
 
 ## 💬 Community Guidelines
 
@@ -412,5 +432,39 @@ We follow [Semantic Versioning](https://semver.org/):
 - Open a GitHub Issue with the "enhancement" label
 - Provide clear use cases and requirements
 - Be open to feedback and alternative approaches
+
+## 🛠️ zsh Users - Helpful Aliases
+
+Add these to your `~/.zshrc` for faster development:
+
+```zsh
+# Personal Assistant Agent aliases
+alias pa-activate="source venv/bin/activate"
+alias pa-test="python test_setup.py"
+alias pa-run="python main.py"
+alias pa-setup="python setup.py"
+alias pa-db="python setup.py --database"
+alias pa-logs="tail -f logs/*.log"
+
+# Development workflow
+alias pa-format="black . && isort ."
+alias pa-lint="flake8 ."
+alias pa-check="python test_setup.py && black . && isort . && flake8 ."
+
+# Docker shortcuts
+alias pa-docker-up="docker-compose up -d"
+alias pa-docker-down="docker-compose down"
+alias pa-docker-logs="docker-compose logs -f assistant_api"
+
+# Git shortcuts for the project
+alias pa-status="git status"
+alias pa-push="git push origin"
+alias pa-pull="git pull origin main"
+```
+
+Then reload your configuration:
+```zsh
+source ~/.zshrc
+```
 
 Thank you for contributing to Personal Assistant Agent! 🎉
