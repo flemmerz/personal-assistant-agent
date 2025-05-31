@@ -22,6 +22,18 @@ def run_command(command, check=True):
         sys.exit(1)
     return result
 
+def get_shell_type():
+    """Detect the current shell type"""
+    shell = os.environ.get('SHELL', '').lower()
+    if 'zsh' in shell:
+        return 'zsh'
+    elif 'bash' in shell:
+        return 'bash'
+    elif 'fish' in shell:
+        return 'fish'
+    else:
+        return 'bash'  # Default fallback
+
 def check_requirements():
     """Check if required software is installed"""
     print("🔍 Checking requirements...")
@@ -62,20 +74,39 @@ def setup_virtual_environment():
     else:
         print("✅ Virtual environment already exists")
     
-    # Activate virtual environment instructions
-    if os.name == 'nt':  # Windows
-        activate_cmd = ".\\venv\\Scripts\\activate"
-    else:  # Unix/MacOS
-        activate_cmd = "source venv/bin/activate"
+    # Provide shell-specific activation instructions
+    shell_type = get_shell_type()
     
-    print(f"📝 To activate the virtual environment, run: {activate_cmd}")
+    if shell_type == 'zsh':
+        activate_cmd = "source venv/bin/activate"
+        print(f"📝 To activate the virtual environment (zsh), run: {activate_cmd}")
+        print("💡 You can also add this alias to your ~/.zshrc:")
+        print("   alias pa-activate='source venv/bin/activate'")
+    elif shell_type == 'bash':
+        activate_cmd = "source venv/bin/activate"
+        print(f"📝 To activate the virtual environment (bash), run: {activate_cmd}")
+    elif shell_type == 'fish':
+        activate_cmd = "source venv/bin/activate.fish"
+        print(f"📝 To activate the virtual environment (fish), run: {activate_cmd}")
+    else:
+        # Windows or unknown
+        if os.name == 'nt':
+            activate_cmd = "venv\\Scripts\\activate"
+        else:
+            activate_cmd = "source venv/bin/activate"
+        print(f"📝 To activate the virtual environment, run: {activate_cmd}")
 
 def install_dependencies():
     """Install Python dependencies"""
     print("\n📦 Installing dependencies...")
     
-    # Determine pip command
-    pip_cmd = "venv/bin/pip" if os.name != 'nt' else "venv\\Scripts\\pip"
+    # Determine pip command based on OS
+    if os.name == 'nt':  # Windows
+        pip_cmd = "venv\\Scripts\\pip"
+        python_cmd = "venv\\Scripts\\python"
+    else:  # Unix/MacOS
+        pip_cmd = "venv/bin/pip"
+        python_cmd = "venv/bin/python"
     
     if not os.path.exists(pip_cmd.split('/')[0] if '/' in pip_cmd else pip_cmd.split('\\')[0]):
         print("❌ Virtual environment not found. Please run setup_virtual_environment() first.")
@@ -91,9 +122,22 @@ def create_env_file():
     
     if not os.path.exists(".env"):
         if os.path.exists(".env.example"):
-            run_command("cp .env.example .env")
+            # Use shell-appropriate copy command
+            if os.name == 'nt':
+                run_command("copy .env.example .env")
+            else:
+                run_command("cp .env.example .env")
             print("✅ .env file created from template")
             print("📝 Please edit .env file with your actual configuration values")
+            
+            # Provide shell-specific editing suggestions
+            shell_type = get_shell_type()
+            if shell_type == 'zsh':
+                print("💡 Edit with your preferred editor:")
+                print("   code .env    # VS Code")
+                print("   vim .env     # Vim")
+                print("   nano .env    # Nano")
+            
         else:
             print("❌ .env.example not found")
     else:
@@ -105,7 +149,7 @@ def create_directories():
     
     directories = [
         "uploads",
-        "templates",
+        "templates", 
         "backups",
         "logs",
         "data"
@@ -120,8 +164,14 @@ async def setup_database():
     print("\n🗄️  Setting up database...")
     
     # Load environment variables
-    from dotenv import load_dotenv
-    load_dotenv()
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        print("⚠️  python-dotenv not installed. Installing...")
+        run_command("pip install python-dotenv")
+        from dotenv import load_dotenv
+        load_dotenv()
     
     database_url = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/assistant_db")
     
@@ -155,6 +205,10 @@ async def setup_database():
     except Exception as e:
         print(f"❌ Database setup failed: {e}")
         print("Please ensure PostgreSQL is running and check your DATABASE_URL in .env")
+        print("\n🔧 Troubleshooting tips:")
+        print("   • Start PostgreSQL: brew services start postgresql (macOS)")
+        print("   • Check connection: pg_isready")
+        print("   • Edit .env file with correct database credentials")
 
 def create_sample_files():
     """Create sample files for testing"""
@@ -210,6 +264,24 @@ Sarah: I'll send that today. Thanks everyone!
         json.dump(config_sample, f, indent=2)
     print("✅ Sample configuration created at data/config_sample.json")
 
+def show_next_steps():
+    """Display next steps based on user's shell"""
+    shell_type = get_shell_type()
+    
+    print("\n✅ Basic setup complete!")
+    print("\n📝 Next steps:")
+    print("1. Edit .env file with your configuration")
+    print("2. Set up your database: python setup.py --database")  
+    print("3. Test the setup: python test_setup.py")
+    
+    if shell_type == 'zsh':
+        print("\n💡 zsh users can add these helpful aliases to ~/.zshrc:")
+        print("   alias pa-activate='source venv/bin/activate'")
+        print("   alias pa-test='python test_setup.py'")
+        print("   alias pa-run='python main.py'")
+        print("   alias pa-setup='python setup.py'")
+        print("\n   Then reload your config: source ~/.zshrc")
+
 def main():
     """Main setup function"""
     print("🚀 Personal Assistant Agent Setup")
@@ -223,14 +295,11 @@ def main():
         create_directories()
         create_sample_files()
         
-        print("\n✅ Basic setup complete!")
-        print("\n📝 Next steps:")
-        print("1. Edit .env file with your configuration")
-        print("2. Set up your database: python setup.py --database")
-        print("3. Test the setup: python main.py")
+        show_next_steps()
         
         # Check if user wants to set up database now
         if "--database" in sys.argv:
+            print("\n" + "=" * 40)
             asyncio.run(setup_database())
         
         print("\n🎉 Setup complete! Your personal assistant agent is ready to use.")
@@ -240,6 +309,10 @@ def main():
         sys.exit(1)
     except Exception as e:
         print(f"\n❌ Setup failed: {e}")
+        print(f"\n🔧 Debug info:")
+        print(f"   Python version: {sys.version}")
+        print(f"   Operating system: {os.name}")
+        print(f"   Shell: {get_shell_type()}")
         sys.exit(1)
 
 if __name__ == "__main__":
