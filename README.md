@@ -9,12 +9,13 @@ A smart personal assistant that processes meeting transcripts and automatically 
 - PostgreSQL
 - Redis (optional, for background tasks)
 - OpenAI or Anthropic API key
+- zsh (recommended shell)
 
 ### 1. Clone and Setup
 
-```bash
-# Clone the repository (or create these files in a new directory)
-mkdir personal-assistant-agent
+```zsh
+# Clone the repository
+git clone https://github.com/flemmerz/personal-assistant-agent.git
 cd personal-assistant-agent
 
 # Run the setup script
@@ -22,18 +23,19 @@ python setup.py
 
 # Or manually:
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ### 2. Configure Environment
 
-```bash
+```zsh
 # Copy environment template
 cp .env.example .env
 
 # Edit .env with your settings
 nano .env
+# or use your preferred editor: code .env, vim .env
 ```
 
 **Required settings in `.env`:**
@@ -46,7 +48,7 @@ ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
 
 ### 3. Setup Database
 
-```bash
+```zsh
 # Automatic setup
 python setup.py --database
 
@@ -56,7 +58,7 @@ python -c "import asyncio; from main import PersonalAssistantAgent; asyncio.run(
 
 ### 4. Test Your Setup
 
-```bash
+```zsh
 python test_setup.py
 ```
 
@@ -146,29 +148,29 @@ await agent.complete_task(task_id)
 ## 🔗 Integration with Meeting Tools
 
 ### Google Meet + Google Drive
-```python
+```zsh
 # The system can automatically pull transcripts from Google Drive
 # Set GOOGLE_DRIVE_FOLDER_ID in .env to your transcript folder
 ```
 
 ### Fellow.app Integration
-```python
+```zsh
 # Add Fellow API credentials to .env
-FELLOW_API_KEY=your-api-key
-FELLOW_WORKSPACE_ID=your-workspace-id
+echo "FELLOW_API_KEY=your-api-key" >> .env
+echo "FELLOW_WORKSPACE_ID=your-workspace-id" >> .env
 
 # Fellow transcripts will be automatically processed
 ```
 
 ### Tactiq Integration
-```python
+```zsh
 # Add Tactiq webhook endpoint or API integration
 # Transcripts are processed as they're created
 ```
 
 ## 🐳 Docker Deployment
 
-```bash
+```zsh
 # Start all services
 docker-compose up -d
 
@@ -176,6 +178,9 @@ docker-compose up -d
 docker-compose logs -f assistant_api
 
 # Access the API at http://localhost:8000
+
+# Stop services
+docker-compose down
 ```
 
 ## 📁 Project Structure
@@ -260,26 +265,47 @@ Sarah: Sure, I'll have that ready by Friday.
 ## 🐛 Troubleshooting
 
 ### Database Connection Issues
-```bash
+```zsh
 # Check if PostgreSQL is running
 pg_isready
 
 # Reset database
 python setup.py --database
+
+# Connect to database directly
+psql $DATABASE_URL
 ```
 
 ### AI API Issues
-```bash
+```zsh
 # Test AI connection
 python test_setup.py --ai-only
 
 # Check API key in .env file
+grep "API_KEY" .env
 ```
 
 ### Permission Issues
-```bash
+```zsh
 # Make sure all directories are writable
 chmod 755 uploads/ templates/ logs/
+
+# Check Python virtual environment
+which python
+echo $VIRTUAL_ENV
+```
+
+### Virtual Environment Issues
+```zsh
+# If you encounter activation issues, try:
+source venv/bin/activate
+
+# Or if using conda:
+conda activate personal-assistant
+
+# Verify Python path
+which python
+python --version
 ```
 
 ## 📞 Support
