@@ -21,7 +21,7 @@ personal-assistant-agent/
 
 ### 1. Clone and Setup Environment
 
-```bash
+```zsh
 git clone https://github.com/flemmerz/personal-assistant-agent.git
 cd personal-assistant-agent
 
@@ -30,32 +30,33 @@ python setup.py
 
 # Or manual setup:
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ### 2. Configure Environment
 
-```bash
+```zsh
 cp .env.example .env
 # Edit .env with your configuration
+code .env  # or vim .env, nano .env
 ```
 
 **Required environment variables:**
-```bash
-DATABASE_URL=postgresql://user:password@localhost:5432/assistant_db
-OPENAI_API_KEY=sk-your-key-here  # OR ANTHROPIC_API_KEY
+```zsh
+export DATABASE_URL="postgresql://user:password@localhost:5432/assistant_db"
+export OPENAI_API_KEY="sk-your-key-here"  # OR ANTHROPIC_API_KEY
 ```
 
 ### 3. Setup Database
 
-```bash
+```zsh
 python setup.py --database
 ```
 
 ### 4. Run Tests
 
-```bash
+```zsh
 python test_setup.py
 ```
 
@@ -282,7 +283,7 @@ async def test_end_to_end_processing():
 ```
 
 ### Running Tests
-```bash
+```zsh
 # Run all tests
 python -m pytest
 
@@ -291,6 +292,12 @@ python -m pytest tests/test_processors.py
 
 # Run with coverage
 python -m pytest --cov=main
+
+# Run tests in verbose mode
+python -m pytest -v
+
+# Run tests and show local variables on failure
+python -m pytest -l
 ```
 
 ## 📊 Performance Considerations
@@ -313,19 +320,40 @@ python -m pytest --cov=main
 ## 🚀 Deployment
 
 ### Local Development
-```bash
+```zsh
+# Activate virtual environment
+source venv/bin/activate
+
+# Run the application
 python main.py
+
+# Run with environment variables
+DATABASE_URL="postgresql://..." python main.py
 ```
 
 ### Docker Development
-```bash
+```zsh
+# Build and run with docker-compose
 docker-compose up -d
+
+# View logs
+docker-compose logs -f assistant_api
+
+# Run a one-off command
+docker-compose run assistant_api python test_setup.py
+
+# Stop services
+docker-compose down
+
+# Rebuild after changes
+docker-compose up -d --build
 ```
 
 ### Production Deployment
-```bash
+```zsh
 # Build and push Docker image
 docker build -t personal-assistant-agent .
+docker tag personal-assistant-agent your-registry/personal-assistant-agent
 docker push your-registry/personal-assistant-agent
 
 # Deploy with docker-compose
@@ -341,15 +369,18 @@ logging.basicConfig(level=logging.DEBUG)
 ```
 
 ### Database Debugging
-```bash
+```zsh
 # Connect to database
 psql $DATABASE_URL
 
 # View recent transcripts
-SELECT id, title, processed FROM meeting_transcripts ORDER BY created_at DESC LIMIT 10;
+psql $DATABASE_URL -c "SELECT id, title, processed FROM meeting_transcripts ORDER BY created_at DESC LIMIT 10;"
 
 # View action items
-SELECT assignee, description, status FROM action_items WHERE status = 'pending';
+psql $DATABASE_URL -c "SELECT assignee, description, status FROM action_items WHERE status = 'pending';"
+
+# Check database connection
+pg_isready -d $DATABASE_URL
 ```
 
 ### AI Response Debugging
@@ -357,6 +388,21 @@ SELECT assignee, description, status FROM action_items WHERE status = 'pending';
 # Add detailed logging to AI client
 print(f"AI Response: {response}")
 print(f"Parsed Action Items: {action_items}")
+```
+
+### Environment Debugging
+```zsh
+# Check environment variables
+echo $DATABASE_URL
+echo $OPENAI_API_KEY
+
+# Check virtual environment
+echo $VIRTUAL_ENV
+which python
+which pip
+
+# Check installed packages
+pip list | grep -E "(openai|anthropic|asyncpg)"
 ```
 
 ## 📚 Code Style
@@ -393,6 +439,21 @@ async def process_transcript(
         raise ProcessingError(f"Processing failed: {e}")
 ```
 
+### Code Formatting
+```zsh
+# Format code with black
+black .
+
+# Sort imports with isort
+isort .
+
+# Check code style with flake8
+flake8 .
+
+# Type checking with mypy
+mypy main.py
+```
+
 ## 🤝 Contributing
 
 ### Pull Request Process
@@ -424,3 +485,35 @@ async def process_transcript(
 - [OpenAI API Documentation](https://platform.openai.com/docs)
 - [Anthropic API Documentation](https://docs.anthropic.com/)
 - [Docker Documentation](https://docs.docker.com/)
+- [zsh Documentation](https://zsh.sourceforge.io/Doc/)
+
+## 🛠️ Development Tools
+
+### Recommended zsh Configuration
+```zsh
+# Add to your ~/.zshrc for this project
+alias pa-activate="source venv/bin/activate"
+alias pa-test="python test_setup.py"
+alias pa-run="python main.py"
+alias pa-logs="tail -f logs/*.log"
+
+# Function to quickly setup the project
+pa-setup() {
+    python setup.py
+    python setup.py --database
+    python test_setup.py
+}
+```
+
+### VS Code Configuration
+```json
+// .vscode/settings.json
+{
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true
+}
+```
