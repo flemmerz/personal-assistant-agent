@@ -1,0 +1,19 @@
+Meeting: Weekly Team Sync
+Date: 2024-01-15
+Participants: John Smith, Sarah Johnson, Mike Chen
+
+John: Alright, let's start with the project updates. Sarah, how's the client onboarding going?
+
+Sarah: Good progress! I've completed the initial requirements gathering with Acme Corp. I need to send them our standard NDA by Wednesday so they can review it before our next meeting. Mike, can you help me find the latest template?
+
+Mike: Absolutely! I'll send you the updated NDA template right after this meeting. Also, I need to schedule a technical review session with their team next week. John, are you available Thursday afternoon?
+
+John: Thursday works for me. I'll also follow up with the legal team about the contract terms we discussed. Sarah, please remind me to review the pricing proposal before we send it to Acme Corp.
+
+Sarah: Will do! I'll also create a project timeline document to share with the client. Should be ready by Friday.
+
+Mike: Perfect. One more thing - I need to research their current tech stack to prepare for the integration discussion. I'll have that analysis done by Monday.
+
+John: Great work everyone. Sarah, don't forget to send that follow-up email to schedule our next client meeting.
+
+Sarah: I'll send that today. Thanks everyone!
